@@ -3831,6 +3831,19 @@ static struct file *io_uring_get_file(struct io_ring_ctx *ctx)
 					 O_RDWR | O_CLOEXEC, NULL);
 }
 
+static bool io_validate_ring_entries(unsigned int *entries,
+				     unsigned int max_entries, __u32 flags)
+{
+	if (!*entries)
+		return false;
+	if (*entries > max_entries) {
+		if (!(flags & IORING_SETUP_CLAMP))
+			return false;
+		*entries = max_entries;
+	}
+	return true;
+}
+
 static __cold int io_uring_create(unsigned entries, struct io_uring_params *p,
 				  struct io_uring_params __user *params)
 {
@@ -3839,13 +3852,8 @@ static __cold int io_uring_create(unsigned entries, struct io_uring_params *p,
 	struct file *file;
 	int ret;
 
-	if (!entries)
+	if (!io_validate_ring_entries(&entries, IORING_MAX_ENTRIES, p->flags))
 		return -EINVAL;
-	if (entries > IORING_MAX_ENTRIES) {
-		if (!(p->flags & IORING_SETUP_CLAMP))
-			return -EINVAL;
-		entries = IORING_MAX_ENTRIES;
-	}
 
 	if ((p->flags & IORING_SETUP_REGISTERED_FD_ONLY)
 	    && !(p->flags & IORING_SETUP_NO_MMAP))
@@ -3866,13 +3874,8 @@ static __cold int io_uring_create(unsigned entries, struct io_uring_params *p,
 		 * to a power-of-two, if it isn't already. We do NOT impose
 		 * any cq vs sq ring sizing.
 		 */
-		if (!p->cq_entries)
+		if (!io_validate_ring_entries(&p->cq_entries, IORING_MAX_CQ_ENTRIES, p->flags))
 			return -EINVAL;
-		if (p->cq_entries > IORING_MAX_CQ_ENTRIES) {
-			if (!(p->flags & IORING_SETUP_CLAMP))
-				return -EINVAL;
-			p->cq_entries = IORING_MAX_CQ_ENTRIES;
-		}
 		p->cq_entries = roundup_pow_of_two(p->cq_entries);
 		if (p->cq_entries < p->sq_entries)
 			return -EINVAL;
