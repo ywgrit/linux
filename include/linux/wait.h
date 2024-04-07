@@ -27,14 +27,14 @@ int default_wake_function(struct wait_queue_entry *wq_entry, unsigned mode, int 
  */
 struct wait_queue_entry {
 	unsigned int		flags;
-	void			*private;
+	void			*private; // task_struct or other things
 	wait_queue_func_t	func;
 	struct list_head	entry;
 };
 
 struct wait_queue_head {
 	spinlock_t		lock;
-	struct list_head	head;
+	struct list_head	head; // list of wait_queue_entry
 };
 typedef struct wait_queue_head wait_queue_head_t;
 

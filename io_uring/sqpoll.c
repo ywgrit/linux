@@ -326,7 +326,7 @@ static int io_sq_thread(void *data)
 			continue;
 		}
 
-		prepare_to_wait(&sqd->wait, &wait, TASK_INTERRUPTIBLE);
+		prepare_to_wait(&sqd->wait, &wait, TASK_INTERRUPTIBLE); // add new wait_entry to io_sq_data->wait list
 		if (!io_sqd_events_pending(sqd) && !io_sq_tw_pending(retry_list)) {
 			bool needs_sched = true;
 
@@ -379,7 +379,7 @@ err_out:
 	complete(&sqd->exited);
 	do_exit(0);
 }
-
+// make current wait util sq_ring is not full
 void io_sqpoll_wait_sq(struct io_ring_ctx *ctx)
 {
 	DEFINE_WAIT(wait);
@@ -417,7 +417,7 @@ __cold int io_sq_offload_create(struct io_ring_ctx *ctx,
 		fdput(f);
 	}
 	if (ctx->flags & IORING_SETUP_SQPOLL) {
-		struct task_struct *tsk;
+		struct task_struct *tsk; // SQ thread
 		struct io_sq_data *sqd;
 		bool attached;
 

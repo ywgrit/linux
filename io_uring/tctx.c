@@ -243,12 +243,16 @@ static int io_ring_add_registered_fd(struct io_uring_task *tctx, int fd,
 }
 
 /*
- * Register a ring fd to avoid fdget/fdput for each io_uring_enter()
- * invocation. User passes in an array of struct io_uring_rsrc_update
- * with ->data set to the ring_fd, and ->offset given for the desired
- * index. If no index is desired, application may set ->offset == -1U
- * and we'll find an available index. Returns number of entries
- * successfully processed, or < 0 on error if none were processed.
+ * Register a ring fd to avoid fdget/fdput(grab and release the reference of fd)
+ * for each io_uring_enter() invocation. User passes in an array of
+ * struct io_uring_rsrc_update with ->data set to the ring_fd, and
+ * ->offset given for the desired index. If no index is desired,
+ * application may set ->offset == -1U and we'll find an available
+ * index. Returns number of entries successfully processed, or < 0
+ * on error if none were processed.
+ *
+ * We just register one ring fd, but we need update all registerd
+ * ring fds with each ring fd set with desired index
  */
 int io_ringfd_register(struct io_ring_ctx *ctx, void __user *__arg,
 		       unsigned nr_args)

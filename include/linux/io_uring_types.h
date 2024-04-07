@@ -363,7 +363,7 @@ struct io_ring_ctx {
 	const struct cred	*sq_creds;	/* cred used for __io_sq_thread() */
 	struct io_sq_data	*sq_data;	/* if using sq thread polling */
 
-	struct wait_queue_head	sqo_sq_wait;
+	struct wait_queue_head	sqo_sq_wait; // wait for
 	struct list_head	sqd_list;
 
 	unsigned int		file_alloc_start;
@@ -403,7 +403,7 @@ struct io_ring_ctx {
 	struct llist_head		fallback_llist;
 	struct delayed_work		fallback_work;
 	struct work_struct		exit_work;
-	struct list_head		tctx_list;
+	struct list_head		tctx_list; // list of io_tctx_node->ctx_node
 	struct completion		ref_comp;
 
 	/* io-wq management, e.g. thread count */

@@ -3656,7 +3656,7 @@ SYSCALL_DEFINE6(io_uring_enter, unsigned int, fd, u32, to_submit,
 		if (flags & IORING_ENTER_SQ_WAKEUP)
 			wake_up(&ctx->sq_data->wait);
 		if (flags & IORING_ENTER_SQ_WAIT)
-			io_sqpoll_wait_sq(ctx);
+			io_sqpoll_wait_sq(ctx); // wait current util sq_ring is not full
 
 		ret = to_submit;
 	} else if (to_submit) {
@@ -3665,7 +3665,7 @@ SYSCALL_DEFINE6(io_uring_enter, unsigned int, fd, u32, to_submit,
 			goto out;
 
 		mutex_lock(&ctx->uring_lock);
-		ret = io_submit_sqes(ctx, to_submit);
+		ret = io_submit_sqes(ctx, to_submit); // use io_queue_sqe to submit sqe finally
 		if (ret != to_submit) {
 			mutex_unlock(&ctx->uring_lock);
 			goto out;
@@ -3678,7 +3678,7 @@ SYSCALL_DEFINE6(io_uring_enter, unsigned int, fd, u32, to_submit,
 			 * it should handle ownership problems if any.
 			 */
 			if (ctx->flags & IORING_SETUP_DEFER_TASKRUN)
-				(void)io_run_local_work_locked(ctx, min_complete);
+				(void)io_run_local_work_locked(ctx, min_complete); // The reason execute this line not in 3694 line is it needs get locked. Keep task work local to a io_ring_ctx, rather than to the submission task.
 		}
 		mutex_unlock(&ctx->uring_lock);
 	}
