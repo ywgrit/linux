@@ -790,7 +790,7 @@ struct mm_struct {
 		unsigned long mmap_compat_legacy_base;
 #endif
 		unsigned long task_size;	/* size of task vm space */
-		pgd_t * pgd;
+		pgd_t * pgd; // the virtual address of Page Global Directory
 
 #ifdef CONFIG_MEMBARRIER
 		/**
